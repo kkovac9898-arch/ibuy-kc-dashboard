@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iBuy KC — Agent Leaderboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1e2330;
+    --gold: #f5c842;
+    --gold2: #e8a800;
+    --silver: #a8b4c8;
+    --bronze: #cd7f3a;
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --accent: #f5c842;
+    --text: #eef1f8;
+    --muted: #6b7280;
+    --danger: #ff4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(245,200,66,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,200,66,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 24px 28px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-block { display: flex; align-items: center; gap: 16px; }
+
+  .logo-icon {
+    width: 52px; height: 52px;
+    background: var(--gold);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: #0a0c10;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+
+  .logo-text h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .logo-text p {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--green);
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    color: var(--text);
+    letter-spacing: 2px;
+  }
+
+  /* ── PERIOD TOGGLE ── */
+  .period-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+
+  .period-toggle {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .period-btn {
+    padding: 10px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .period-btn.active {
+    background: var(--gold);
+    color: #0a0c10;
+  }
+
+  .period-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── STAT CARDS ROW ── */
+  .stat-cards {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--card-accent, var(--gold));
+  }
+
+  .stat-card .card-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .stat-card .card-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .stat-card .card-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .stat-card .card-target {
+    font-size: 11px;
+    margin-top: 6px;
+  }
+
+  .on-track { color: var(--green); }
+  .behind { color: var(--danger); }
+  .warning { color: #f59e0b; }
+
+  /* contracts card special */
+  .contracts-card {
+    --card-accent: #22c55e;
+    grid-column: span 1;
+  }
+
+  /* ── LEADERBOARD TABLE ── */
+  .leaderboard-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+
+  .lb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .lb-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--gold);
+  }
+
+  .lb-meta {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    padding: 12px 16px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    text-align: center;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th:first-child { text-align: left; padding-left: 24px; }
+  thead th:nth-child(2) { text-align: left; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    animation: fadeSlide 0.4s ease both;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  tbody tr:nth-child(1) { --delay: 0.05s; }
+  tbody tr:nth-child(2) { --delay: 0.1s; }
+  tbody tr:nth-child(3) { --delay: 0.15s; }
+  tbody tr:nth-child(4) { --delay: 0.2s; }
+  tbody tr:nth-child(5) { --delay: 0.25s; }
+  tbody tr:nth-child(6) { --delay: 0.3s; }
+
+  tbody tr { animation-delay: var(--delay, 0s); }
+
+  td {
+    padding: 14px 16px;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  td:first-child { padding-left: 24px; width: 60px; }
+  td:nth-child(2) { text-align: left; }
+
+  .rank-badge {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+  }
+
+  .rank-1 { background: rgba(245,200,66,0.15); color: var(--gold); border: 1px solid rgba(245,200,66,0.4); }
+  .rank-2 { background: rgba(168,180,200,0.1); color: var(--silver); border: 1px solid rgba(168,180,200,0.3); }
+  .rank-3 { background: rgba(205,127,58,0.1); color: var(--bronze); border: 1px solid rgba(205,127,58,0.3); }
+  .rank-other { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+  .agent-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text);
+  }
+
+  .agent-role {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .kpi-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .kpi-good { color: var(--green); }
+  .kpi-warn { color: #f59e0b; }
+  .kpi-bad { color: var(--red); }
+  .kpi-neutral { color: var(--text); }
+
+  /* Progress mini bar */
+  .progress-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .mini-bar {
+    width: 60px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .mini-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+
+  .fill-green { background: var(--green); }
+  .fill-yellow { background: #f59e0b; }
+  .fill-red { background: var(--red); }
+  .fill-gold { background: var(--gold); }
+
+  /* Overdue badge */
+  .overdue-badge {
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.4);
+    color: var(--red);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .clean-badge {
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.3);
+    color: var(--green);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* contract star */
+  .contract-count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .contract-count .star { color: var(--gold); font-size: 14px; }
+
+  /* ── CONTRACTS GENERATED PANEL ── */
+  .contracts-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+
+  .cp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(90deg, rgba(34,197,94,0.08), transparent);
+  }
+
+  .cp-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--green);
+  }
+
+  .cp-icon { font-size: 20px; }
+
+  .cp-total {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--green);
+  }
+
+  .cp-total span {
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 6px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .contracts-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+  }
+
+  .contract-agent {
+    padding: 20px 18px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+    transition: background 0.15s;
+  }
+
+  .contract-agent:last-child { border-right: none; }
+  .contract-agent:hover { background: var(--surface2); }
+
+  .ca-name {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .ca-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .ca-count.zero { color: var(--border); }
+
+  .ca-deals {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .deal-tag {
+    font-size: 10px;
+    background: rgba(34,197,94,0.08);
+    border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 4px;
+    padding: 2px 8px;
+    color: var(--green);
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .deal-tag:hover { background: rgba(34,197,94,0.15); }
+
+  /* ── RULES TICKER ── */
+  .rules-ticker {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .ticker-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .ticker-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+
+  .ticker-content {
+    display: flex;
+    gap: 40px;
+    overflow: hidden;
+    white-space: nowrap;
+    animation: ticker 30s linear infinite;
+  }
+
+  .ticker-item {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  .ticker-item strong { color: var(--text); }
+
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ── EDIT MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    width: 520px;
+    max-width: 95vw;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .modal h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+
+  .modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-group label {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .field-group input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .field-group input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+
+  .btn-gold { background: var(--gold); color: #0a0c10; }
+  .btn-gold:hover { background: var(--gold2); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-green { background: var(--green); color: #0a0c10; }
+  .btn-green:hover { background: #16a34a; }
+
+  /* Contract add form */
+  .add-contract-wrap {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .add-contract-wrap select,
+  .add-contract-wrap input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    transition: border-color 0.2s;
+  }
+
+  .add-contract-wrap select:focus,
+  .add-contract-wrap input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  .add-contract-wrap select option { background: var(--surface); }
+
+  /* Google Sheets section */
+  .sheets-banner {
+    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(59,130,246,0.03));
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .sheets-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sheets-icon {
+    width: 36px; height: 36px;
+    background: rgba(59,130,246,0.15);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .sheets-text h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--blue);
+    margin-bottom: 2px;
+  }
+
+  .sheets-text p {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .sheets-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .sheets-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    width: 300px;
+  }
+
+  .sheets-input:focus { outline: none; border-color: var(--blue); }
+
+  .btn-blue { background: var(--blue); color: white; }
+  .btn-blue:hover { background: #2563eb; }
+
+  /* Responsive for office TV */
+  @media (max-width: 1200px) {
+    .stat-cards { grid-template-columns: repeat(3, 1fr); }
+    .contracts-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-left { display: flex; gap: 8px; margin-left: auto; }
+
+  /* Tooltip */
+  .tooltip-wrap { position: relative; }
+  .tooltip-wrap:hover .tooltip { opacity: 1; pointer-events: auto; }
+  .tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--text);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 10;
+  }
+
+  /* Last updated */
+  .last-updated {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* Score bar row */
+  .score-col {
+    min-width: 80px;
+  }
+
+  .score-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .score-bar-bg {
+    width: 70px;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .score-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s ease;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-block">
+      <div class="logo-icon">IB</div>
+      <div class="logo-text">
+        <h1>iBuy KC</h1>
+        <p>Agent Performance Leaderboard</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge"><div class="live-dot"></div> Live</div>
+      <div class="clock" id="clock">00:00:00</div>
+    </div>
+  </header>
+
+  <!-- RULES TICKER -->
+  <div class="rules-ticker">
+    <div class="ticker-label">⚡ Standards</div>
+    <div class="ticker-divider"></div>
+    <div class="ticker-content" id="ticker">
+      <span class="ticker-item">🎯 <strong>30 calls before lunch</strong> — new lead gen ONLY</span>
+      <span class="ticker-item">⏰ <strong>Hours: 9am – 5pm</strong> (45-min lunch)</span>
+      <span class="ticker-item">🚫 <strong>Follow-ups NEVER go overdue</strong></span>
+      <span class="ticker-item">🚪 <strong>16 doors per week</strong></span>
+      <span class="ticker-item">💡 <strong>5 qualified leads per week</strong> — 65+ lead score</span>
+      <span class="ticker-item">📄 <strong>Contracts generated = the scoreboard</strong></span>
+      <span class="ticker-item">🎯 <strong>30 calls before lunch</strong> — new lead gen ONLY</span>
+      <span class="ticker-item">⏰ <strong>Hours: 9am – 5pm</strong> (45-min lunch)</span>
+      <span class="ticker-item">🚫 <strong>Follow-ups NEVER go overdue</strong></span>
+      <span class="ticker-item">🚪 <strong>16 doors per week</strong></span>
+      <span class="ticker-item">💡 <strong>5 qualified leads per week</strong> — 65+ lead score</span>
+      <span class="ticker-item">📄 <strong>Contracts generated = the scoreboard</strong></span>
+    </div>
+  </div>
+
+  <!-- PERIOD TOGGLE + DATE -->
+  <div class="period-row">
+    <div class="period-toggle">
+      <button class="period-btn active" onclick="setPeriod('weekly', this)">Weekly</button>
+      <button class="period-btn" onclick="setPeriod('monthly', this)">Monthly</button>
+    </div>
+    <div class="period-label" id="period-label">Week of Apr 1 – Apr 6, 2026</div>
+  </div>
+
+  <!-- TOP STAT CARDS -->
+  <div class="stat-cards" id="stat-cards">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="last-updated" id="last-updated">Last updated: —</div>
+    <div class="toolbar-left">
+      <button class="btn btn-ghost" onclick="openSheetsModal()">📊 Connect Google Sheets</button>
+      <button class="btn btn-gold" onclick="openEditModal(null)">+ Update Numbers</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD TABLE -->
+  <div class="leaderboard-wrap">
+    <div class="lb-header">
+      <div class="lb-title">🏆 Agent Rankings</div>
+      <div class="lb-meta" id="lb-meta">Ranked by total score</div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Agent</th>
+          <th>Calls Made</th>
+          <th>Contacts</th>
+          <th>Doors Knocked</th>
+          <th>Qualified Leads</th>
+          <th>Follow-Ups</th>
+          <th>Offers Made</th>
+          <th>Contracts</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body">
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CONTRACTS GENERATED PANEL -->
+  <div class="contracts-panel">
+    <div class="cp-header">
+      <div class="cp-title"><span class="cp-icon">📄</span> Contracts Generated</div>
+      <div class="cp-total" id="cp-total">0 <span>total this period</span></div>
+    </div>
+    <div class="contracts-grid" id="contracts-grid">
+    </div>
+    <div class="add-contract-wrap">
+      <select id="contract-agent-select">
+        <option value="">Select Agent...</option>
+      </select>
+      <input type="text" id="contract-address" placeholder="Property address (e.g. 1234 Oak St, Lee's Summit)" style="width:280px;">
+      <select id="contract-type">
+        <option value="Fix & Flip">Fix & Flip</option>
+        <option value="Buy & Hold">Buy & Hold</option>
+        <option value="BRRRR">BRRRR</option>
+        <option value="Wholesale">Wholesale</option>
+      </select>
+      <button class="btn btn-green" onclick="addContract()">+ Add Contract</button>
+    </div>
+  </div>
+
+  <!-- GOOGLE SHEETS BANNER -->
+  <div class="sheets-banner" id="sheets-banner">
+    <div class="sheets-left">
+      <div class="sheets-icon">📊</div>
+      <div class="sheets-text">
+        <h4>Google Sheets Auto-Sync</h4>
+        <p>Paste your published sheet URL to auto-import agent numbers daily</p>
+      </div>
+    </div>
+    <div class="sheets-input-row">
+      <input class="sheets-input" type="text" id="sheets-url" placeholder="https://docs.google.com/spreadsheets/d/..." />
+      <button class="btn btn-blue" onclick="connectSheets()">Connect</button>
+      <button class="btn btn-ghost" style="font-size:11px;" onclick="showSheetsGuide()">Setup Guide</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="modal-title">Update Agent Numbers</h2>
+    <div class="modal-grid" id="modal-fields"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveModal()">Save Numbers</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHEETS GUIDE MODAL -->
+<div class="modal-overlay" id="sheets-modal">
+  <div class="modal">
+    <h2>Connect Google Sheets</h2>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px;">
+      To auto-sync smrtPhone or your report card spreadsheet:<br><br>
+      <strong style="color:var(--text);">1.</strong> Open your Google Sheet<br>
+      <strong style="color:var(--text);">2.</strong> File → Share → Publish to web<br>
+      <strong style="color:var(--text);">3.</strong> Choose <em>Entire Document</em> → <em>CSV</em><br>
+      <strong style="color:var(--text);">4.</strong> Copy the published URL and paste it above<br><br>
+      <strong style="color:var(--gold);">Column format required:</strong><br>
+      <code style="font-size:11px;color:var(--text);background:var(--bg);padding:4px 8px;border-radius:4px;display:block;margin-top:6px;">Agent | Calls | Contacts | Doors | Qual.Leads | FollowUps | Offers | Contracts</code>
+      <br>
+      The dashboard will auto-refresh every 5 minutes when connected.
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('sheets-modal').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+const AGENTS = ['Josh', 'Drew', 'Colin', 'Ashley', 'Brandton', 'Jared'];
+
+const TARGETS = {
+  weekly: { calls: 150, contacts: 50, doors: 16, qualLeads: 5, followUps: 0, offers: 5, contracts: 1 },
+  monthly: { calls: 600, contacts: 200, doors: 64, qualLeads: 20, followUps: 0, offers: 20, contracts: 4 }
+};
+
+const KPI_LABELS = {
+  calls: 'Calls Made',
+  contacts: 'Contacts',
+  doors: 'Doors',
+  qualLeads: 'Qual. Leads',
+  followUps: 'Overdue F/U',
+  offers: 'Offers',
+  contracts: 'Contracts'
+};
+
+function defaultAgentData() {
+  return AGENTS.reduce((acc, name) => {
+    acc[name] = {
+      weekly: { calls: 0, contacts: 0, doors: 0, qualLeads: 0, followUps: 0, offers: 0, contracts: 0 },
+      monthly: { calls: 0, contacts: 0, doors: 0, qualLeads: 0, followUps: 0, offers: 0, contracts: 0 }
+    };
+    return acc;
+  }, {});
+}
+
+function defaultContracts() {
+  return AGENTS.reduce((acc, name) => { acc[name] = []; return acc; }, {});
+}
+
+// Load from storage
+let agentData = JSON.parse(localStorage.getItem('ibuy_kc_data') || 'null') || defaultAgentData();
+let contractsList = JSON.parse(localStorage.getItem('ibuy_kc_contracts') || 'null') || defaultContracts();
+let currentPeriod = 'weekly';
+let editingAgent = null;
+
+function save() {
+  localStorage.setItem('ibuy_kc_data', JSON.stringify(agentData));
+  localStorage.setItem('ibuy_kc_contracts', JSON.stringify(contractsList));
+  document.getElementById('last-updated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+}
+
+// ── SCORING ──────────────────────────────────────────────────────────────────
+
+function calcScore(d, period) {
+  const t = TARGETS[period];
+  const callPct = Math.min(d.calls / t.calls, 1);
+  const doorPct = Math.min(d.doors / t.doors, 1);
+  const leadPct = Math.min(d.qualLeads / t.qualLeads, 1);
+  const offerPct = Math.min(d.offers / t.offers, 1);
+  const contractBonus = d.contracts * 15;
+  const overdueDeduction = d.followUps * 5;
+  return Math.max(0, Math.round((callPct * 30 + doorPct * 20 + leadPct * 25 + offerPct * 20) * 100 / 100 + contractBonus - overdueDeduction));
+}
+
+function rankAgents(period) {
+  return AGENTS
+    .map(name => ({ name, data: agentData[name][period], score: calcScore(agentData[name][period], period) }))
+    .sort((a, b) => b.score - a.score);
+}
+
+// ── STAT CARDS ────────────────────────────────────────────────────────────────
+
+function renderStatCards(period) {
+  const totals = AGENTS.reduce((acc, name) => {
+    const d = agentData[name][period];
+    acc.calls += d.calls;
+    acc.contacts += d.contacts;
+    acc.doors += d.doors;
+    acc.qualLeads += d.qualLeads;
+    acc.followUps += d.followUps;
+    acc.contracts += d.contracts;
+    acc.offers += d.offers;
+    return acc;
+  }, { calls: 0, contacts: 0, doors: 0, qualLeads: 0, followUps: 0, contracts: 0, offers: 0 });
+
+  const t = TARGETS[period];
+  const teamSize = AGENTS.length;
+  const teamTargets = {
+    calls: t.calls * teamSize,
+    contacts: t.contacts * teamSize,
+    doors: t.doors * teamSize,
+    qualLeads: t.qualLeads * teamSize,
+    offers: t.offers * teamSize
+  };
+
+  function pctColor(val, target) {
+    const p = val / target;
+    if (p >= 1) return 'on-track';
+    if (p >= 0.7) return 'warning';
+    return 'behind';
+  }
+
+  const cards = [
+    { label: 'Calls Made', val: totals.calls, target: teamTargets.calls, accent: '#f5c842', suffix: `/ ${teamTargets.calls} target` },
+    { label: 'Contacts', val: totals.contacts, target: teamTargets.contacts, accent: '#3b82f6', suffix: `/ ${teamTargets.contacts} target` },
+    { label: 'Doors Knocked', val: totals.doors, target: teamTargets.doors, accent: '#a855f7', suffix: `/ ${teamTargets.doors} target` },
+    { label: 'Qualified Leads', val: totals.qualLeads, target: teamTargets.qualLeads, accent: '#06b6d4', suffix: `/ ${teamTargets.qualLeads} target` },
+    { label: 'Offers Made', val: totals.offers, target: teamTargets.offers, accent: '#f59e0b', suffix: `/ ${teamTargets.offers} target` },
+    { label: 'Contracts', val: totals.contracts, target: null, accent: '#22c55e', suffix: 'generated' },
+  ];
+
+  document.getElementById('stat-cards').innerHTML = cards.map(c => {
+    const pct = c.target ? Math.min((c.val / c.target) * 100, 100) : 100;
+    const statusClass = c.target ? pctColor(c.val, c.target) : 'on-track';
+    const statusText = c.target
+      ? (pct >= 100 ? '✓ On Track' : pct >= 70 ? '⚡ Near Target' : `${Math.round(pct)}% to goal`)
+      : '';
+    return `
+      <div class="stat-card" style="--card-accent:${c.accent}">
+        <div class="card-label">${c.label}</div>
+        <div class="card-val">${c.val}</div>
+        <div class="card-sub">${c.suffix}</div>
+        ${c.target ? `
+          <div class="mini-bar" style="margin-top:8px;width:100%;"><div class="mini-fill ${pct>=100?'fill-green':pct>=70?'fill-yellow':'fill-red'}" style="width:${pct}%"></div></div>
+          <div class="card-target ${statusClass}">${statusText}</div>
+        ` : ''}
+      </div>`;
+  }).join('');
+}
+
+// ── LEADERBOARD ───────────────────────────────────────────────────────────────
+
+function renderLeaderboard(period) {
+  const ranked = rankAgents(period);
+  const maxScore = Math.max(...ranked.map(r => r.score), 1);
+
+  document.getElementById('lb-body').innerHTML = ranked.map((r, i) => {
+    const d = r.data;
+    const t = TARGETS[period];
+    const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+    const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
+
+    function kpiClass(val, target, invert) {
+      if (invert) return val === 0 ? 'kpi-good' : 'kpi-bad';
+      const p = val / target;
+      return p >= 1 ? 'kpi-good' : p >= 0.7 ? 'kpi-warn' : 'kpi-bad';
+    }
+
+    function miniProgress(val, target) {
+      const pct = Math.min((val / target) * 100, 100);
+      const cls = pct >= 100 ? 'fill-green' : pct >= 70 ? 'fill-yellow' : 'fill-red';
+      return `<div class="progress-wrap">
+        <span class="kpi-val ${kpiClass(val, target)}">${val}</span>
+        <div class="mini-bar"><div class="mini-fill ${cls}" style="width:${pct}%"></div></div>
+      </div>`;
+    }
+
+    const fuBadge = d.followUps === 0
+      ? `<span class="clean-badge">✓ CLEAN</span>`
+      : `<span class="overdue-badge">${d.followUps} OVERDUE</span>`;
+
+    const contractVal = d.contracts > 0
+      ? `<div class="contract-count">${d.contracts}<span class="star">★</span></div>`
+      : `<span class="kpi-val" style="color:var(--border)">0</span>`;
+
+    const scorePct = Math.round((r.score / maxScore) * 100);
+    const scoreColor = r.score >= 80 ? 'fill-green' : r.score >= 50 ? 'fill-yellow' : 'fill-red';
+
+    return `
+      <tr onclick="openEditModal('${r.name}')" style="cursor:pointer;">
+        <td><div class="rank-badge ${rankClass}">${rankLabel}</div></td>
+        <td>
+          <div class="agent-name">${r.name}</div>
+          <div class="agent-role">Acquisitions</div>
+        </td>
+        <td>${miniProgress(d.calls, t.calls)}</td>
+        <td>${miniProgress(d.contacts, t.contacts)}</td>
+        <td>${miniProgress(d.doors, t.doors)}</td>
+        <td>${miniProgress(d.qualLeads, t.qualLeads)}</td>
+        <td>${fuBadge}</td>
+        <td>${miniProgress(d.offers, t.offers)}</td>
+        <td>${contractVal}</td>
+        <td class="score-col">
+          <div class="score-bar-wrap">
+            <span class="kpi-val ${r.score >= 80 ? 'kpi-good' : r.score >= 50 ? 'kpi-warn' : 'kpi-bad'}">${r.score}</span>
+            <div class="score-bar-bg"><div class="score-bar-fill ${scoreColor}" style="width:${scorePct}%"></div></div>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ── CONTRACTS PANEL ───────────────────────────────────────────────────────────
+
+function renderContracts() {
+  const total = Object.values(contractsList).reduce((s, arr) => s + arr.length, 0);
+  document.getElementById('cp-total').innerHTML = `${total} <span>total this period</span>`;
+
+  document.getElementById('contracts-grid').innerHTML = AGENTS.map(name => {
+    const deals = contractsList[name] || [];
+    return `
+      <div class="contract-agent">
+        <div class="ca-name">${name}</div>
+        <div class="ca-count ${deals.length === 0 ? 'zero' : ''}">${deals.length}</div>
+        <div class="ca-deals">
+          ${deals.map(d => `<div class="deal-tag" title="${d.address}">📄 ${d.type}</div>`).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  // populate select
+  const sel = document.getElementById('contract-agent-select');
+  sel.innerHTML = '<option value="">Select Agent...</option>' + AGENTS.map(n => `<option>${n}</option>`).join('');
+}
+
+// ── ADD CONTRACT ──────────────────────────────────────────────────────────────
+
+function addContract() {
+  const agent = document.getElementById('contract-agent-select').value;
+  const address = document.getElementById('contract-address').value.trim();
+  const type = document.getElementById('contract-type').value;
+  if (!agent || !address) { alert('Please select an agent and enter a property address.'); return; }
+
+  contractsList[agent].push({ address, type, date: new Date().toLocaleDateString() });
+
+  // also increment contracts in data
+  agentData[agent].weekly.contracts++;
+  agentData[agent].monthly.contracts++;
+
+  document.getElementById('contract-address').value = '';
+  save();
+  renderAll();
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+
+function openEditModal(agent) {
+  editingAgent = agent;
+  const isAll = !agent;
+  document.getElementById('modal-title').textContent = isAll ? 'Update Agent Numbers' : `Update — ${agent}`;
+
+  let fieldsHTML = '';
+  if (isAll) {
+    fieldsHTML += `<div class="field-group" style="grid-column:span 2"><label>Agent</label>
+      <select id="edit-agent" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;">
+        ${AGENTS.map(n => `<option>${n}</option>`).join('')}
+      </select></div>`;
+  }
+
+  const d = agent ? agentData[agent][currentPeriod] : agentData[AGENTS[0]][currentPeriod];
+  const fields = [
+    { key: 'calls', label: 'Calls Made' },
+    { key: 'contacts', label: 'Contacts / Talk-Tos' },
+    { key: 'doors', label: 'Doors Knocked' },
+    { key: 'qualLeads', label: 'Qualified Leads (65+)' },
+    { key: 'followUps', label: 'Overdue Follow-Ups' },
+    { key: 'offers', label: 'Offers Made' },
+  ];
+
+  fieldsHTML += fields.map(f => `
+    <div class="field-group">
+      <label>${f.label}</label>
+      <input type="number" min="0" id="edit-${f.key}" value="${agent ? d[f.key] : 0}" />
+    </div>`).join('');
+
+  document.getElementById('modal-fields').innerHTML = fieldsHTML;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function saveModal() {
+  const agent = editingAgent || document.getElementById('edit-agent')?.value;
+  if (!agent) return;
+
+  const fields = ['calls', 'contacts', 'doors', 'qualLeads', 'followUps', 'offers'];
+  fields.forEach(k => {
+    const val = parseInt(document.getElementById(`edit-${k}`)?.value || 0);
+    agentData[agent][currentPeriod][k] = isNaN(val) ? 0 : val;
+  });
+
+  save();
+  closeModal();
+  renderAll();
+}
+
+// ── SHEETS ────────────────────────────────────────────────────────────────────
+
+function openSheetsModal() { document.getElementById('sheets-modal').classList.add('open'); }
+function showSheetsGuide() { document.getElementById('sheets-modal').classList.add('open'); }
+
+function connectSheets() {
+  const url = document.getElementById('sheets-url').value.trim();
+  if (!url.includes('docs.google.com')) { alert('Please enter a valid Google Sheets URL.'); return; }
+  localStorage.setItem('ibuy_sheets_url', url);
+  fetchSheets(url);
+}
+
+async function fetchSheets(url) {
+  try {
+    // Convert to CSV export URL if needed
+    const csvUrl = url.includes('/pub?') ? url.replace('output=html', 'output=csv') : url;
+    const resp = await fetch(csvUrl);
+    const text = await resp.text();
+    const rows = text.trim().split('\n').slice(1); // skip header
+
+    rows.forEach(row => {
+      const cols = row.split(',').map(c => c.trim().replace(/"/g, ''));
+      const name = cols[0];
+      if (!AGENTS.includes(name)) return;
+      agentData[name][currentPeriod] = {
+        calls: parseInt(cols[1]) || 0,
+        contacts: parseInt(cols[2]) || 0,
+        doors: parseInt(cols[3]) || 0,
+        qualLeads: parseInt(cols[4]) || 0,
+        followUps: parseInt(cols[5]) || 0,
+        offers: parseInt(cols[6]) || 0,
+        contracts: agentData[name][currentPeriod].contracts // keep manual contracts
+      };
+    });
+
+    save();
+    renderAll();
+    alert('✅ Synced successfully from Google Sheets!');
+  } catch (e) {
+    alert('Could not fetch sheet. Make sure it\'s published as CSV (File → Share → Publish to web).');
+  }
+}
+
+// ── PERIOD ────────────────────────────────────────────────────────────────────
+
+function setPeriod(period, btn) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const now = new Date();
+  if (period === 'weekly') {
+    const mon = new Date(now); mon.setDate(now.getDate() - now.getDay() + 1);
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    document.getElementById('period-label').textContent = `Week of ${mon.toLocaleDateString('en-US', {month:'short',day:'numeric'})} – ${sun.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}`;
+  } else {
+    document.getElementById('period-label').textContent = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
+  renderAll();
+}
+
+// ── CLOCK ─────────────────────────────────────────────────────────────────────
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── MAIN RENDER ───────────────────────────────────────────────────────────────
+
+function renderAll() {
+  renderStatCards(currentPeriod);
+  renderLeaderboard(currentPeriod);
+  renderContracts();
+}
+
+// Close modals on overlay click
+document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+document.getElementById('sheets-modal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+// Auto-refresh from sheets every 5 min if connected
+const savedSheetsUrl = localStorage.getItem('ibuy_sheets_url');
+if (savedSheetsUrl) {
+  document.getElementById('sheets-url').value = savedSheetsUrl;
+  setInterval(() => fetchSheets(savedSheetsUrl), 5 * 60 * 1000);
+}
+
+// Trigger period label on load
+document.getElementById('period-label').textContent = (() => {
+  const now = new Date();
+  const mon = new Date(now); mon.setDate(now.getDate() - now.getDay() + 1);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  return `Week of ${mon.toLocaleDateString('en-US', {month:'short',day:'numeric'})} – ${sun.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}`;
+})();
+
+renderAll();
+</script>
+</body>
+</html>
