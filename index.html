@@ -977,19 +977,39 @@
 
 <!-- SHEETS GUIDE MODAL -->
 <div class="modal-overlay" id="sheets-modal">
-  <div class="modal">
+  <div class="modal" style="width:580px;">
     <h2>Connect Google Sheets</h2>
-    <p style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px;">
-      To auto-sync smrtPhone or your report card spreadsheet:<br><br>
-      <strong style="color:var(--text);">1.</strong> Open your Google Sheet<br>
+
+    <!-- URL INPUT RIGHT AT THE TOP -->
+    <div style="background:var(--bg);border:1px solid var(--gold);border-radius:10px;padding:16px;margin-bottom:20px;">
+      <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:700;display:block;margin-bottom:8px;">Paste Your Published CSV URL Here</label>
+      <div style="display:flex;gap:8px;">
+        <input
+          id="sheets-url"
+          type="text"
+          placeholder="https://docs.google.com/spreadsheets/d/e/..."
+          style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;"
+        />
+        <button class="btn btn-blue" onclick="connectSheets()" style="white-space:nowrap;">Connect</button>
+      </div>
+      <div id="sheets-status" style="font-size:11px;color:var(--muted);margin-top:8px;"></div>
+    </div>
+
+    <!-- INSTRUCTIONS -->
+    <p style="font-size:12px;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase;font-weight:700;">How to get your URL:</p>
+    <p style="font-size:13px;color:var(--muted);line-height:1.9;margin-bottom:16px;">
+      <strong style="color:var(--text);">1.</strong> Open your Google Sheet (Door Knocking report card)<br>
       <strong style="color:var(--text);">2.</strong> File → Share → Publish to web<br>
-      <strong style="color:var(--text);">3.</strong> Choose <em>Entire Document</em> → <em>CSV</em><br>
-      <strong style="color:var(--text);">4.</strong> Copy the published URL and paste it above<br><br>
-      <strong style="color:var(--gold);">Column format required:</strong><br>
-      <code style="font-size:11px;color:var(--text);background:var(--bg);padding:4px 8px;border-radius:4px;display:block;margin-top:6px;">Agent | Calls | Contacts | Doors | Qual.Leads | FollowUps | Offers | Contracts</code>
-      <br>
-      The dashboard will auto-refresh every 5 minutes when connected.
+      <strong style="color:var(--text);">3.</strong> Choose <em>Entire Document</em> → <em>Comma-separated values (.csv)</em><br>
+      <strong style="color:var(--text);">4.</strong> Click Publish → Copy the URL → Paste above
     </p>
+
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:20px;">
+      <p style="font-size:11px;color:var(--gold);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Required column order in your sheet:</p>
+      <code style="font-size:11px;color:var(--text);display:block;">Agent | Calls | Contacts | Doors | Qual.Leads | FollowUps | Offers | Contracts</code>
+      <p style="font-size:11px;color:var(--muted);margin-top:6px;">Agent names must match exactly: Josh, Drew, Colin, Ashley, Brandton, Jared</p>
+    </div>
+
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="document.getElementById('sheets-modal').classList.remove('open')">Close</button>
     </div>
@@ -999,7 +1019,7 @@
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────────────
 
-const AGENTS = ['Josh', 'Drew', 'Colin', 'Ashley', 'Brandton', 'Jared'];
+const AGENTS = ['Josh', 'Drew', 'Colin'];
 
 const TARGETS = {
   weekly: { calls: 150, contacts: 50, doors: 16, qualLeads: 5, followUps: 0, offers: 5, contracts: 1 },
@@ -1284,23 +1304,37 @@ function showSheetsGuide() { document.getElementById('sheets-modal').classList.a
 
 function connectSheets() {
   const url = document.getElementById('sheets-url').value.trim();
-  if (!url.includes('docs.google.com')) { alert('Please enter a valid Google Sheets URL.'); return; }
+  const status = document.getElementById('sheets-status');
+  if (!url.includes('docs.google.com')) {
+    status.style.color = 'var(--red)';
+    status.textContent = '⚠ Please paste a valid Google Sheets URL.';
+    return;
+  }
+  status.style.color = 'var(--muted)';
+  status.textContent = '⏳ Connecting...';
   localStorage.setItem('ibuy_sheets_url', url);
   fetchSheets(url);
 }
 
 async function fetchSheets(url) {
+  const status = document.getElementById('sheets-status');
   try {
-    // Convert to CSV export URL if needed
-    const csvUrl = url.includes('/pub?') ? url.replace('output=html', 'output=csv') : url;
-    const resp = await fetch(csvUrl);
-    const text = await resp.text();
-    const rows = text.trim().split('\n').slice(1); // skip header
+    // Ensure CSV output format
+    let csvUrl = url;
+    if (csvUrl.includes('output=html')) csvUrl = csvUrl.replace('output=html', 'output=csv');
+    if (!csvUrl.includes('output=csv')) csvUrl += (csvUrl.includes('?') ? '&' : '?') + 'output=csv';
 
+    const resp = await fetch(csvUrl);
+    if (!resp.ok) throw new Error('Fetch failed');
+    const text = await resp.text();
+    const rows = text.trim().split('\n').slice(1);
+
+    let matched = 0;
     rows.forEach(row => {
       const cols = row.split(',').map(c => c.trim().replace(/"/g, ''));
       const name = cols[0];
       if (!AGENTS.includes(name)) return;
+      matched++;
       agentData[name][currentPeriod] = {
         calls: parseInt(cols[1]) || 0,
         contacts: parseInt(cols[2]) || 0,
@@ -1308,15 +1342,21 @@ async function fetchSheets(url) {
         qualLeads: parseInt(cols[4]) || 0,
         followUps: parseInt(cols[5]) || 0,
         offers: parseInt(cols[6]) || 0,
-        contracts: agentData[name][currentPeriod].contracts // keep manual contracts
+        contracts: agentData[name][currentPeriod].contracts
       };
     });
 
     save();
     renderAll();
-    alert('✅ Synced successfully from Google Sheets!');
+    if (status) {
+      status.style.color = 'var(--green)';
+      status.textContent = `✅ Connected! ${matched} agent${matched !== 1 ? 's' : ''} synced. Auto-refreshes every 5 min.`;
+    }
   } catch (e) {
-    alert('Could not fetch sheet. Make sure it\'s published as CSV (File → Share → Publish to web).');
+    if (status) {
+      status.style.color = 'var(--red)';
+      status.textContent = '⚠ Could not fetch. Make sure the sheet is published as CSV (File → Share → Publish to web → CSV).';
+    }
   }
 }
 
@@ -1364,7 +1404,10 @@ document.getElementById('sheets-modal').addEventListener('click', e => { if (e.t
 // Auto-refresh from sheets every 5 min if connected
 const savedSheetsUrl = localStorage.getItem('ibuy_sheets_url');
 if (savedSheetsUrl) {
-  document.getElementById('sheets-url').value = savedSheetsUrl;
+  const inp = document.getElementById('sheets-url');
+  if (inp) inp.value = savedSheetsUrl;
+  const status = document.getElementById('sheets-status');
+  if (status) { status.style.color = 'var(--green)'; status.textContent = '✅ Previously connected — auto-refreshing every 5 min.'; }
   setInterval(() => fetchSheets(savedSheetsUrl), 5 * 60 * 1000);
 }
 
